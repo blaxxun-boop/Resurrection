@@ -14,10 +14,11 @@ using UnityEngine.UI;
 namespace Resurrection;
 
 [BepInPlugin(ModGUID, ModName, ModVersion)]
+[BepInDependency("aedenthorn.InstantMonsterDrop", BepInDependency.DependencyFlags.SoftDependency)]
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.0";
+	private const string ModVersion = "1.0.1";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -71,6 +72,21 @@ public class Resurrection : BaseUnityPlugin
 		harmony.PatchAll(assembly);
 
 		LoadAssets();
+	}
+
+	[HarmonyPatch]
+	private static class FixInstantMonsterDrop
+	{
+		private static MethodInfo TargetMethod()
+		{
+			if (Type.GetType("InstantMonsterDrop.BepInExPlugin+Ragdoll_Awake_Patch, InstantMonsterDrop") is { } instantMonsterDrop)
+			{
+				return AccessTools.DeclaredMethod(instantMonsterDrop, "Postfix");
+			}
+			return AccessTools.DeclaredMethod(typeof(FixInstantMonsterDrop), nameof(Prefix));
+		}
+
+		private static bool Prefix(Ragdoll __0) => !__0.name.StartsWith("Player_ragdoll");
 	}
 
 	[HarmonyPatch(typeof(Player), nameof(Player.Awake))]
