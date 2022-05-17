@@ -18,7 +18,7 @@ namespace Resurrection;
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.1";
+	private const string ModVersion = "1.0.2";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -27,6 +27,7 @@ public class Resurrection : BaseUnityPlugin
 	private static ConfigEntry<int> respawnHealth = null!;
 	public static ConfigEntry<string> resurrectCosts = null!;
 	public static ConfigEntry<float> resurrectionTime = null!;
+	public static ConfigEntry<Toggle> groupResurrection = null!;
 
 	private class ConfigurationManagerAttributes
 	{
@@ -45,7 +46,7 @@ public class Resurrection : BaseUnityPlugin
 
 	private ConfigEntry<T> config<T>(string group, string name, T value, string description, bool synchronizedSetting = true) => config(group, name, value, new ConfigDescription(description), synchronizedSetting);
 
-	private enum Toggle
+	public enum Toggle
 	{
 		On = 1,
 		Off = 0
@@ -66,6 +67,7 @@ public class Resurrection : BaseUnityPlugin
 		respawnHealth = config("1 - General", "Respawn Health", 25, new ConfigDescription("Percentage of health after being resurrected.", new AcceptableValueRange<int>(1, 100)));
 		resurrectCosts = config("1 - General", "Resurrection Cost", "SurtlingCore:1", new ConfigDescription("Items required to resurrect someone.", null, new ConfigurationManagerAttributes { CustomDrawer = SerializedRequirements.drawConfigTable }));
 		resurrectionTime = config("1 - General", "Resurrection Time", 5f, new ConfigDescription("Time in seconds required to resurrect someone.", new AcceptableValueRange<float>(0f, 10f)));
+		groupResurrection = config("1 - General", "Group Resurrection", Toggle.On, new ConfigDescription("If on, only other group members may resurrect a player. Requires the group mod to have any effect."));
 
 		Assembly assembly = Assembly.GetExecutingAssembly();
 		Harmony harmony = new(ModGUID);
@@ -199,7 +201,7 @@ public class Resurrection : BaseUnityPlugin
 	{
 		private static bool Prefix()
 		{
-			return Player.m_localPlayer is null || !Player.m_localPlayer.m_nview.GetZDO().GetBool("dead");
+			return !Player.m_localPlayer || !Player.m_localPlayer.m_nview.GetZDO().GetBool("dead");
 		}
 	}
 

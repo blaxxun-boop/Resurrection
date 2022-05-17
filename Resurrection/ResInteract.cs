@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using Groups;
+using UnityEngine;
 
 namespace Resurrection;
 
@@ -12,8 +14,16 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 		{
 			return false;
 		}
-
+		
 		ZDO zdo = GetComponentInParent<ZNetView>().GetZDO();
+		ZDOID playerID = zdo.GetZDOID("Resurrection PlayerInfo PlayerId");
+		
+		if (API.IsLoaded() && Resurrection.groupResurrection.Value == Resurrection.Toggle.On && API.GroupPlayers().All(p => p.peerId != playerID.m_userID))
+		{
+			Player.m_localPlayer.Message(MessageHud.MessageType.Center, "This player is not in your group.");
+
+			return false;
+		}
 		if (zdo.GetBool("Resurrection PlayerInfo Started"))
 		{
 			return false;

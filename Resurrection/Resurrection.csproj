@@ -69,6 +69,9 @@
             <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
             <SpecificVersion>false</SpecificVersion>
         </Reference>
+        <Reference Include="Groups">
+          <HintPath>$(GamePath)\BepInEx\plugins\Groups.dll</HintPath>
+        </Reference>
         <Reference Include="ServerSync, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>ServerSync.dll</HintPath>
         </Reference>
@@ -114,6 +117,9 @@
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="deathportal" />
+        <Content Include="GroupsAPI.dll">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
         <Content Include="ILRepack.targets" />
         <Content Include="ServerSync.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
