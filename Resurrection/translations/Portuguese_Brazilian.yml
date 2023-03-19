@@ -1,0 +1,8 @@
+resurrection_you_died_message: "Você morreu!"
+resurrection_respawn: "Renascer"
+resurrection_resurrecting_message: "Reanimando $1"
+resurrection_interrupted_message: "Reanimação interrompida."
+resurrection_resurrect: "Reanimar"
+resurrection_missing_required_items: "Você não possui os itens necessários."
+resurrection_far_message: "Você está muito longe para completar a reanimação."
+resurrection_player_not_in_group: "Este jogador não está no seu grupo."
