@@ -20,7 +20,7 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 		
 		if (API.IsLoaded() && Resurrection.groupResurrection.Value == Resurrection.Toggle.On && API.GroupPlayers().All(p => p.peerId != playerID.m_userID))
 		{
-			Player.m_localPlayer.Message(MessageHud.MessageType.Center, "This player is not in your group.");
+			Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$resurrection_player_not_in_group");
 
 			return false;
 		}
@@ -33,7 +33,7 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 		{
 			if (requirement.GetItem() is { } item && Player.m_localPlayer.m_inventory.CountItems(item.m_itemData.m_shared.m_name) < requirement.amount)
 			{
-				Player.m_localPlayer.Message(MessageHud.MessageType.Center, "You do not have the required items.");
+				Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$resurrection_missing_required_items");
 
 				return false;
 			}
@@ -69,7 +69,7 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 			Transform corpsePosition = transform;
 			if (Utils.DistanceXZ(corpsePosition.position, Player.m_localPlayer.transform.position) > 4f)
 			{
-				Player.m_localPlayer.Message(MessageHud.MessageType.Center, "You are too far away to complete the resurrection.");
+				Player.m_localPlayer.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$resurrection_far_message"));
 
 				return;
 			}
@@ -78,7 +78,7 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 			{
 				if (requirement.GetItem() is { } item && Player.m_localPlayer.m_inventory.CountItems(item.m_itemData.m_shared.m_name) < requirement.amount)
 				{
-					Player.m_localPlayer.Message(MessageHud.MessageType.Center, "You do not have the required items.");
+					Player.m_localPlayer.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$resurrection_missing_required_items"));
 
 					return;
 				}
@@ -107,7 +107,7 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 	{
 		if (GetComponentInParent<ZNetView>()?.GetZDO() is { } zdo)
 		{
-			return zdo.GetString("Resurrection PlayerInfo PlayerName") + (zdo.GetBool("Resurrection PlayerInfo Started") ? "" : Localization.instance.Localize("\n[<color=yellow><b>$KEY_Use</b></color>] Resurrect"));
+			return zdo.GetString("Resurrection PlayerInfo PlayerName") + (zdo.GetBool("Resurrection PlayerInfo Started") ? "" : Localization.instance.Localize("\n[<color=yellow><b>$KEY_Use</b></color>] $resurrection_resurrect"));
 		}
 		return "";
 	}

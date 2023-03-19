@@ -10,6 +10,7 @@ using JetBrains.Annotations;
 using ServerSync;
 using UnityEngine;
 using UnityEngine.UI;
+using LocalizationManager;
 
 namespace Resurrection;
 
@@ -18,7 +19,7 @@ namespace Resurrection;
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.5";
+	private const string ModVersion = "1.0.6";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -60,7 +61,9 @@ public class Resurrection : BaseUnityPlugin
 
 	public void Awake()
 	{
-		self = this;
+        Localizer.Load();
+
+        self = this;
 
 		serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
 		configSync.AddLockingConfigEntry(serverConfigLocked);
@@ -232,12 +235,12 @@ public class Resurrection : BaseUnityPlugin
 		private static void Postfix()
 		{
 			respawnDialog = Instantiate(Menu.instance.m_quitDialog.gameObject, Hud.instance.m_rootObject.transform.parent.parent, true);
-			respawnDialog.transform.Find("dialog/Exit").GetComponent<Text>().text = "You have died";
+			respawnDialog.transform.Find("dialog/Exit").GetComponent<Text>().text = Localization.instance.Localize("$resurrection_you_died_message");
 			Button.ButtonClickedEvent respawnClicked = new();
 			respawnClicked.AddListener(onRespawnClicked);
 			respawnDialog.transform.Find("dialog/Button_no").GetComponent<Button>().transform.localPosition = new Vector3(0, respawnDialog.transform.Find("dialog/Button_no").GetComponent<Button>().transform.localPosition.y);
 			respawnDialog.transform.Find("dialog/Button_no").GetComponent<Button>().onClick = respawnClicked;
-			respawnDialog.transform.Find("dialog/Button_no/Text").GetComponent<Text>().text = "Respawn";
+			respawnDialog.transform.Find("dialog/Button_no/Text").GetComponent<Text>().text = Localization.instance.Localize("$resurrection_respawn");
 			Destroy(respawnDialog.transform.Find("dialog/Button_yes").gameObject);
 		}
 	}
@@ -290,7 +293,7 @@ public class Resurrection : BaseUnityPlugin
 			if (resurrectionEndTime > 0)
 			{
 				progress = 1 - (resurrectionEndTime - Time.fixedTime) / resurrectionTime.Value;
-				name = $"Resurrecting {resurrectionTarget}";
+				name = Localization.instance.Localize("$resurrection_resurrecting_message", resurrectionTarget);
 			}
 		}
 	}
@@ -313,7 +316,7 @@ public class Resurrection : BaseUnityPlugin
 			{
 				if (resurrectionEndTime > 0)
 				{
-					Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Resurrection interrupted.");
+					Player.m_localPlayer.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$resurrection_interrupted_message"));
 					resurrectionEndTime = 0;
 				}
 			}
