@@ -14,11 +14,11 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 		{
 			return false;
 		}
-		
+
 		ZDO zdo = GetComponentInParent<ZNetView>().GetZDO();
 		ZDOID playerID = zdo.GetZDOID("Resurrection PlayerInfo PlayerId");
-		
-		if (API.IsLoaded() && Resurrection.groupResurrection.Value == Resurrection.Toggle.On && API.GroupPlayers().All(p => p.peerId != playerID.m_userID))
+
+		if (API.IsLoaded() && Resurrection.groupResurrection.Value == Resurrection.Toggle.On && API.GroupPlayers().All(p => p.peerId != playerID.UserID))
 		{
 			Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$resurrection_player_not_in_group");
 
@@ -94,7 +94,7 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 
 			resurrectionStarted = true;
 			ZDOID playerId = GetComponentInParent<ZNetView>().GetZDO().GetZDOID("Resurrection PlayerInfo PlayerId");
-			ZRoutedRpc.instance.InvokeRoutedRPC(playerId.m_userID, playerId, "Resurrection Start");
+			ZRoutedRpc.instance.InvokeRoutedRPC(playerId.UserID, playerId, "Resurrection Start");
 		}
 	}
 
