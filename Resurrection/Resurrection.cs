@@ -21,7 +21,7 @@ namespace Resurrection;
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.6";
+	private const string ModVersion = "1.0.7";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -52,7 +52,7 @@ public class Resurrection : BaseUnityPlugin
 	public enum Toggle
 	{
 		On = 1,
-		Off = 0
+		Off = 0,
 	}
 
 	private static GameObject? respawnDialog;
@@ -254,7 +254,7 @@ public class Resurrection : BaseUnityPlugin
 		respawnDialog?.SetActive(false);
 	}
 
-	[HarmonyPatch(typeof(Menu), nameof(Menu.IsVisible))]
+	[HarmonyPatch(typeof(TextInput), nameof(TextInput.IsVisible))]
 	private class DisablePlayerInputInRespawnDialog
 	{
 		private static void Postfix(ref bool __result)
