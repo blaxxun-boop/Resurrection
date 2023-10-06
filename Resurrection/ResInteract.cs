@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Groups;
 using UnityEngine;
 
@@ -52,6 +53,11 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 		}
 
 		return true;
+	}
+
+	public void OnDestroy()
+	{
+		Resurrection.resurrectionEndTime = 0;
 	}
 
 	public void Resurrect()

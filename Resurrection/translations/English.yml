@@ -1,4 +1,5 @@
-resurrection_you_died_message: "You have died"
+resurrection_you_died_title: "You Died"
+resurrection_you_died_message: "Wait for someone to resurrect you or respawn now."
 resurrection_respawn: "Respawn"
 resurrection_resurrecting_message: "Resurrecting $1"
 resurrection_interrupted_message: "Resurrection interrupted."

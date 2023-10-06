@@ -9,7 +9,6 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using ServerSync;
 using UnityEngine;
-using UnityEngine.UI;
 using LocalizationManager;
 
 namespace Resurrection;
@@ -21,7 +20,7 @@ namespace Resurrection;
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.8";
+	private const string ModVersion = "1.0.9";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -55,11 +54,43 @@ public class Resurrection : BaseUnityPlugin
 		Off = 0,
 	}
 
-	private static GameObject? respawnDialog;
 	private static GameObject deathportalfab = null!;
 	public static float resurrectionEndTime;
 	public static string resurrectionTarget = null!;
 	private static Resurrection self = null!;
+
+	private static ResurrectionPopup? activePopup;
+
+	private class ResurrectionPopup
+	{
+		private bool dialogClosed = false;
+
+		public ResurrectionPopup()
+		{
+			UnifiedPopup.Push(new CancelableTaskPopup(() => Localization.instance.Localize("$resurrection_you_died_title"), () => Localization.instance.Localize("$resurrection_you_died_message"), shouldClose, Respawn));
+		}
+
+		private bool shouldClose()
+		{
+			UnifiedPopup.instance.buttonCenterText.text = Localization.instance.Localize("$resurrection_respawn");
+			return dialogClosed;
+		}
+
+		private void Respawn()
+		{
+			Player.m_localPlayer.GetRagdoll().DestroyNow();
+			Game.instance._RequestRespawn();
+			dialogClosed = true;
+			activePopup = null;
+			UnifiedPopup.Pop();
+		}
+
+		public void Hide()
+		{
+			dialogClosed = true;
+			activePopup = null;
+		}
+	}
 
 	public void Awake()
 	{
@@ -112,7 +143,7 @@ public class Resurrection : BaseUnityPlugin
 		ragdoll.m_nview.GetZDO().Set("Resurrection PlayerInfo Started", true);
 
 		self.Invoke(nameof(SendResurrectedRPC), 4f);
-		respawnDialog?.SetActive(false);
+		activePopup?.Hide();
 
 		Vector3 targetPos = ragdoll.transform.position + Vector3.up;
 		Instantiate(deathportalfab, targetPos, Quaternion.Euler(0, 0, 90));
@@ -172,7 +203,7 @@ public class Resurrection : BaseUnityPlugin
 			{
 				resurrectionEndTime = 0;
 
-				respawnDialog?.SetActive(true);
+				activePopup ??= new ResurrectionPopup();
 
 				ragdoll.m_nview.GetZDO().Set("Resurrection PlayerInfo PlayerName", Player.m_localPlayer.GetHoverName());
 				ragdoll.m_nview.GetZDO().Set("Resurrection PlayerInfo PlayerId", Player.m_localPlayer.GetZDOID());
@@ -227,41 +258,6 @@ public class Resurrection : BaseUnityPlugin
 				{
 					yield return instruction;
 				}
-			}
-		}
-	}
-
-	[HarmonyPatch(typeof(Menu), nameof(Menu.Start))]
-	private class AddRespawnDialog
-	{
-		private static void Postfix()
-		{
-			respawnDialog = Instantiate(Menu.instance.m_quitDialog.gameObject, Hud.instance.m_rootObject.transform.parent.parent, true);
-			respawnDialog.transform.Find("dialog/Exit").GetComponent<Text>().text = Localization.instance.Localize("$resurrection_you_died_message");
-			Button.ButtonClickedEvent respawnClicked = new();
-			respawnClicked.AddListener(onRespawnClicked);
-			respawnDialog.transform.Find("dialog/Button_no").GetComponent<Button>().transform.localPosition = new Vector3(0, respawnDialog.transform.Find("dialog/Button_no").GetComponent<Button>().transform.localPosition.y);
-			respawnDialog.transform.Find("dialog/Button_no").GetComponent<Button>().onClick = respawnClicked;
-			respawnDialog.transform.Find("dialog/Button_no/Text").GetComponent<Text>().text = Localization.instance.Localize("$resurrection_respawn");
-			Destroy(respawnDialog.transform.Find("dialog/Button_yes").gameObject);
-		}
-	}
-
-	private static void onRespawnClicked()
-	{
-		Player.m_localPlayer.GetRagdoll().DestroyNow();
-		Game.instance._RequestRespawn();
-		respawnDialog?.SetActive(false);
-	}
-
-	[HarmonyPatch(typeof(TextInput), nameof(TextInput.IsVisible))]
-	private class DisablePlayerInputInRespawnDialog
-	{
-		private static void Postfix(ref bool __result)
-		{
-			if (respawnDialog && respawnDialog?.activeSelf == true)
-			{
-				__result = true;
 			}
 		}
 	}
