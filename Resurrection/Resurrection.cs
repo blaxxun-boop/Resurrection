@@ -21,7 +21,7 @@ namespace Resurrection;
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.7";
+	private const string ModVersion = "1.0.8";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -63,9 +63,9 @@ public class Resurrection : BaseUnityPlugin
 
 	public void Awake()
 	{
-        Localizer.Load();
+		Localizer.Load();
 
-        self = this;
+		self = this;
 
 		serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
 		configSync.AddLockingConfigEntry(serverConfigLocked);
