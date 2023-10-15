@@ -20,7 +20,7 @@ namespace Resurrection;
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.9";
+	private const string ModVersion = "1.0.10";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -235,8 +235,9 @@ public class Resurrection : BaseUnityPlugin
 	[HarmonyPatch(typeof(Game), nameof(Game.RequestRespawn))]
 	private static class DelayRespawn
 	{
-		private static bool Prefix()
+		private static bool Prefix(Game __instance, bool afterDeath)
 		{
+			__instance.m_respawnAfterDeath = afterDeath;
 			return !Player.m_localPlayer || !Player.m_localPlayer.m_nview.GetZDO().GetBool("dead");
 		}
 	}
