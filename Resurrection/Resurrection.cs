@@ -20,7 +20,7 @@ namespace Resurrection;
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.10";
+	private const string ModVersion = "1.0.11";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -64,15 +64,23 @@ public class Resurrection : BaseUnityPlugin
 	private class ResurrectionPopup
 	{
 		private bool dialogClosed = false;
+		public readonly PopupBase Popup;
 
 		public ResurrectionPopup()
 		{
-			UnifiedPopup.Push(new CancelableTaskPopup(() => Localization.instance.Localize("$resurrection_you_died_title"), () => Localization.instance.Localize("$resurrection_you_died_message"), shouldClose, Respawn));
+			UnifiedPopup.Push(Popup = new CancelableTaskPopup(() => Localization.instance.Localize("$resurrection_you_died_title"), () => Localization.instance.Localize("$resurrection_you_died_message"), shouldClose, Respawn));
 		}
 
 		private bool shouldClose()
 		{
 			UnifiedPopup.instance.buttonCenterText.text = Localization.instance.Localize("$resurrection_respawn");
+			foreach (UIGamePad gamePad in UnifiedPopup.instance.buttonCenter.GetComponents<UIGamePad>())
+			{
+				if (gamePad.m_keyCode == KeyCode.Return)
+				{
+					gamePad.enabled = false;
+				}
+			}
 			return dialogClosed;
 		}
 
@@ -80,8 +88,7 @@ public class Resurrection : BaseUnityPlugin
 		{
 			Player.m_localPlayer.GetRagdoll().DestroyNow();
 			Game.instance._RequestRespawn();
-			dialogClosed = true;
-			activePopup = null;
+			Hide();
 			UnifiedPopup.Pop();
 		}
 
@@ -89,6 +96,10 @@ public class Resurrection : BaseUnityPlugin
 		{
 			dialogClosed = true;
 			activePopup = null;
+			foreach (UIGamePad gamePad in UnifiedPopup.instance.buttonCenter.GetComponents<UIGamePad>())
+			{
+				gamePad.enabled = true;
+			}
 		}
 	}
 
@@ -111,7 +122,7 @@ public class Resurrection : BaseUnityPlugin
 
 		LoadAssets();
 	}
-
+	
 	[HarmonyPatch]
 	private static class FixInstantMonsterDrop
 	{
@@ -213,6 +224,18 @@ public class Resurrection : BaseUnityPlugin
 		}
 	}
 
+	[HarmonyPatch(typeof(UnifiedPopup), nameof(UnifiedPopup.WasVisibleThisFrame))]
+	private static class AllowChatInteractionInResurrectionDialog
+	{
+		private static void Postfix(ref bool __result)
+		{
+			if (activePopup is not null && UnifiedPopup.instance.popupStack.Peek() == activePopup.Popup)
+			{
+				__result = false;
+			}
+		}
+	}
+
 	[HarmonyPatch(typeof(Ragdoll), nameof(Ragdoll.Awake))]
 	private static class SyncInteract
 	{
@@ -282,6 +305,9 @@ public class Resurrection : BaseUnityPlugin
 	{
 		AssetBundle assets = LoadAssetBundle("deathportal");
 		deathportalfab = assets.LoadAsset<GameObject>("DeathPortal");
+		TimedDestruction destruction = deathportalfab.AddComponent<TimedDestruction>();
+		destruction.m_timeout = 10f;
+		destruction.m_triggerOnAwake = true;
 	}
 
 	[HarmonyPatch(typeof(Player), nameof(Player.GetActionProgress))]
