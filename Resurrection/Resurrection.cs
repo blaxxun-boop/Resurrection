@@ -16,11 +16,12 @@ namespace Resurrection;
 [BepInPlugin(ModGUID, ModName, ModVersion)]
 [BepInIncompatibility("org.bepinex.plugins.valheim_plus")]
 [BepInDependency("org.bepinex.plugins.groups", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("org.bepinex.plugins.guilds", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency("aedenthorn.InstantMonsterDrop", BepInDependency.DependencyFlags.SoftDependency)]
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.11";
+	private const string ModVersion = "1.0.12";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -29,7 +30,7 @@ public class Resurrection : BaseUnityPlugin
 	private static ConfigEntry<int> respawnHealth = null!;
 	public static ConfigEntry<string> resurrectCosts = null!;
 	public static ConfigEntry<float> resurrectionTime = null!;
-	public static ConfigEntry<Toggle> groupResurrection = null!;
+	public static ConfigEntry<ResurrectionRequirement> resurrectionRequirement = null!;
 
 	private class ConfigurationManagerAttributes
 	{
@@ -52,6 +53,13 @@ public class Resurrection : BaseUnityPlugin
 	{
 		On = 1,
 		Off = 0,
+	}
+	
+	public enum ResurrectionRequirement
+	{
+		Everyone = 0,
+		Group = 1,
+		Guild = 2,
 	}
 
 	private static GameObject deathportalfab = null!;
@@ -114,7 +122,7 @@ public class Resurrection : BaseUnityPlugin
 		respawnHealth = config("1 - General", "Respawn Health", 25, new ConfigDescription("Percentage of health after being resurrected.", new AcceptableValueRange<int>(1, 100)));
 		resurrectCosts = config("1 - General", "Resurrection Cost", "SurtlingCore:1", new ConfigDescription("Items required to resurrect someone.", null, new ConfigurationManagerAttributes { CustomDrawer = SerializedRequirements.drawConfigTable }));
 		resurrectionTime = config("1 - General", "Resurrection Time", 5f, new ConfigDescription("Time in seconds required to resurrect someone.", new AcceptableValueRange<float>(0f, 10f)));
-		groupResurrection = config("1 - General", "Group Resurrection", Toggle.On, new ConfigDescription("If on, only other group members may resurrect a player. Requires the group mod to have any effect."));
+		resurrectionRequirement = config("1 - General", "Resurrection Requirement", ResurrectionRequirement.Group, new ConfigDescription("Everyone: Any player can resurrect any other player.\nGroup: Only members of the same group can resurrect each other.\nGuild: Only members of the same guild can resurrect each other.\nThe group and guild option require the respective mods to be installed. The option will default to 'Everyone' otherwise."));
 
 		Assembly assembly = Assembly.GetExecutingAssembly();
 		Harmony harmony = new(ModGUID);
@@ -310,15 +318,23 @@ public class Resurrection : BaseUnityPlugin
 		destruction.m_triggerOnAwake = true;
 	}
 
-	[HarmonyPatch(typeof(Player), nameof(Player.GetActionProgress))]
+	[HarmonyPatch]
 	private class AddCraftingAnimation
 	{
-		private static void Postfix(ref string name, ref float progress)
+		private static MethodInfo TargetMethod() => typeof(Player).GetMethods().Single(m => m.Name == nameof(Player.GetActionProgress) && m.GetParameters().Length == 3);
+		
+		private static void Postfix(ref string name, ref float progress, ref Player.MinorActionData data)
 		{
 			if (resurrectionEndTime > 0)
 			{
 				progress = 1 - (resurrectionEndTime - Time.fixedTime) / resurrectionTime.Value;
 				name = Localization.instance.Localize("$resurrection_resurrecting_message", resurrectionTarget);
+				data = new Player.MinorActionData
+				{
+					m_type = (Player.MinorActionData.ActionType)(-1),
+					m_progressText = name,
+					m_duration = 1,
+				};
 			}
 		}
 	}

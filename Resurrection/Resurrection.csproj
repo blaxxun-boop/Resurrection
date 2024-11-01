@@ -72,6 +72,9 @@
         <Reference Include="Groups">
           <HintPath>GroupsAPI.dll</HintPath>
         </Reference>
+        <Reference Include="Guilds">
+          <HintPath>GuildsAPI.dll</HintPath>
+        </Reference>
         <Reference Include="LocalizationManager, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>LocalizationManager.dll</HintPath>
         </Reference>
@@ -128,6 +131,9 @@
         <EmbeddedResource Include="deathportal"/>
         <Content Include="GroupsAPI.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="GuildsAPI.dll">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="ILRepack.targets"/>
         <Content Include="LocalizationManager.dll">

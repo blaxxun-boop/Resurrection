@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Groups;
 using UnityEngine;
 
 namespace Resurrection;
@@ -19,11 +18,21 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 		ZDO zdo = GetComponentInParent<ZNetView>().GetZDO();
 		ZDOID playerID = zdo.GetZDOID("Resurrection PlayerInfo PlayerId");
 
-		if (API.IsLoaded() && Resurrection.groupResurrection.Value == Resurrection.Toggle.On && API.GroupPlayers().All(p => p.peerId != playerID.UserID))
+		if (Groups.API.IsLoaded() && Resurrection.resurrectionRequirement.Value == Resurrection.ResurrectionRequirement.Group && Groups.API.GroupPlayers().All(p => p.peerId != playerID.UserID))
 		{
 			Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$resurrection_player_not_in_group");
 
 			return false;
+		}
+		if (Guilds.API.IsLoaded() && Resurrection.resurrectionRequirement.Value == Resurrection.ResurrectionRequirement.Guild)
+		{
+			Guilds.PlayerReference playerReference = Guilds.PlayerReference.fromPlayerInfo(ZNet.instance.m_players.FirstOrDefault(info => info.m_characterID == playerID));
+			if (Guilds.API.GetOwnGuild()?.Members.Any(p => p.Key == playerReference) != true)
+			{
+				Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$resurrection_player_not_in_guild");
+
+				return false;
+			}
 		}
 		if (zdo.GetBool("Resurrection PlayerInfo Started"))
 		{
