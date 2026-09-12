@@ -131,4 +131,6 @@ public class ResInteract : MonoBehaviour, Interactable, Hoverable
 	{
 		return GetComponentInParent<ZNetView>()?.GetZDO()?.GetString("Resurrection PlayerInfo PlayerName") ?? "";
 	}
+
+	public float GetHoverOffset() => 0;
 }

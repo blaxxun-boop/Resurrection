@@ -17,11 +17,10 @@ namespace Resurrection;
 [BepInIncompatibility("org.bepinex.plugins.valheim_plus")]
 [BepInDependency("org.bepinex.plugins.groups", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency("org.bepinex.plugins.guilds", BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency("aedenthorn.InstantMonsterDrop", BepInDependency.DependencyFlags.SoftDependency)]
 public class Resurrection : BaseUnityPlugin
 {
 	private const string ModName = "Resurrection";
-	private const string ModVersion = "1.0.13";
+	private const string ModVersion = "1.0.14";
 	private const string ModGUID = "org.bepinex.plugins.resurrection";
 
 	private static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
